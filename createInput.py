@@ -94,8 +94,7 @@ def createXML(allStages, oFileFolder, filename):
 		print "{0}: import error: {1}".format(os.path.basename(sys.argv[0]), err)
 	return
 	
-def main(filename, oFileFolder):
-
+def defStages():
 	#Вводим количество этапов сноса
 	printEq()
 	numDem = 0
@@ -293,7 +292,7 @@ def main(filename, oFileFolder):
 			elif s in ["n", "N", "no", "No", "NO", "not", "NOT", "Not"]:
 				sizeFlag = False
 			else:
-				printErr("Try again")		
+				printErr("Try again")	
 		if sizeFlag:
 			size = -1.0
 			while size == -1.0:
@@ -320,7 +319,18 @@ def main(filename, oFileFolder):
 					
 		allStages.append(copy.deepcopy(demStage))
 		del demStage
-		
+	return allStages
+
+def readStages(pti):
+	
+	return 
+	
+def main(pti, filename, oFileFolder):
+
+	if pti == "":
+		allStages = defStages()
+	else:
+		allStages = readStages(pti)
 	#Создаем XML
 	createXML(allStages, oFileFolder, filename)
 	print "Done!"
@@ -340,11 +350,13 @@ if __name__ == "__main__":
 	required = parser.add_argument_group('required arguments')
 	optional = parser.add_argument_group('optional arguments')
 	
+	optional.add_argument('--pti', action = 'store', dest='pti',  type=str, help='Path to input file (with name)', required=False, default = "")
 	optional.add_argument('--fName', action = 'store', dest='filename',  type=str, help='Output filename', required=False, default = "new_xml")
 	optional.add_argument('--ofnf', action = 'store', dest='oFileNewFolder',metavar='NEW_FOLDER', type=str, help='path to the new output folder for output files', required=False, default=mypath)
 	
 	args_new = parser.parse_args()
 	oFileNewFolder = args_new.oFileNewFolder
+	pti = args_new.pti
 	if oFileNewFolder != mypath:
 		try:
 			os.makedirs(oFileNewFolder)
@@ -352,4 +364,4 @@ if __name__ == "__main__":
 			print "Warning! {0}".format(err)
 	filename = args_new.filename
 	filename = filename+".xml"
-	sys.exit(main(filename, oFileNewFolder))
+	sys.exit(main(pti, filename, oFileNewFolder))
