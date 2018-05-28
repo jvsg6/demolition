@@ -8,6 +8,8 @@ import copy
 import argparse
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
+from termcolor import colored
+#print colored('hello', 'red'), colored('world', 'green')
 class demolitionStage():
 	def __init__(self, stage):
 		self.stage = stage
@@ -16,7 +18,8 @@ class demolitionStage():
 		self.DR = -1.0
 		self.ARF = -1.0
 		self.ARFdrop = -1.0
-		self.size = 1.0
+		self.ARFsize = 1.0
+		self.LPF = -1.0
 class InvalidTypeARF(Exception):
 	pass
 
@@ -77,13 +80,18 @@ def createXML(allStages, oFileFolder, filename):
 		elARF = xml.etree.ElementTree.SubElement(element, "ARF_SUM")
 		elSubARF = xml.etree.ElementTree.SubElement(elARF, "ARF")
 		elSubARF.text = "{0}".format(stage.ARF)
+		#Записываем AFRdrop
 		if stage.ARFdrop != -1:
 			elSubARFdrop = xml.etree.ElementTree.SubElement(elARF, "ARFdrop")
 			elSubARFdrop.text = "{0}".format(stage.ARFdrop)
-		#Записываем множитель размера частиц
+			
+		#Записываем множитель размера частиц для AFR
 		elSubARFsize = xml.etree.ElementTree.SubElement(elARF, "ARFsize")
-		elSubARFsize.text = "{0}".format(stage.size)
+		elSubARFsize.text = "{0}".format(stage.ARFsize)
 		
+		#Записываем LPF
+		elLPF = xml.etree.ElementTree.SubElement(element, "LPF")
+		elLPF.text = "{0}".format(stage.LPF)
 		root.append(element)
 		
 	tree = xml.etree.ElementTree.ElementTree(root)
@@ -100,7 +108,7 @@ def defStages():
 	numDem = 0
 	while numDem == 0:
 		try:
-			numDem = raw_input("Enter number of demolitions stage ")
+			numDem = raw_input(colored("Enter number of demolitions stage ", "green"))
 			t = type(numDem)
 			numDem = int(numDem)
 			if numDem<0:
@@ -110,7 +118,6 @@ def defStages():
 		except LessZero as err:
 			printErr("Error: Demolitions stage must be more than zero!")
 	allStages = []
-	
 	#Цикл по всем этапам сноса
 	for i in range(1, numDem+1):
 		printEq()
@@ -129,7 +136,7 @@ def defStages():
 					demStage.typeDemolition = 0
 			except ValueError:
 				printErr( "Error: The type of demolition must be int, not {0}".format(t))
-		
+		printEq()
 		#Вводим количество нуклидов
 		numNucl = 0
 		while numNucl == 0:
@@ -139,7 +146,7 @@ def defStages():
 				numNucl = int(numNucl)
 			except ValueError:
 				printErr( "Error: The number of nuclides must be int, not {0}".format(t))
-				
+		print
 		#Вводим нуклиды		
 		nuclides = []
 		for j in range(1, numNucl+1):
@@ -166,7 +173,7 @@ def defStages():
 			
 		demStage.nuclides = nuclides
 		
-		
+		printEq()
 		#Вводим DR
 		while demStage.DR == -1.0:
 			try:
@@ -190,7 +197,7 @@ def defStages():
 				demStage.DR = -1.0
 				printErr("Error: DR must be less than one")
 		
-		
+		printEq()
 		#Вводим ARF
 		typeARF = 0.0
 		while typeARF == 0.0:
@@ -314,25 +321,111 @@ def defStages():
 				except MoreOne as err:
 					size = -1.0
 					printErr("Error: Particle-size multiplier must be less than one!")
-			demStage.size = size
-					
-					
+			demStage.ARFsize = size
+		printEq()
+		if demStage.typeDemolition == 2:
+			LPF_Flag = None
+			while LPF_Flag == None:
+				print "Is the calculation at the time of the explosion? (Considerativity LPF set to 1.0) [Y/n]"
+				s = raw_input()
+				if s in ["y", "Y", "Yes", "yes", "YES"]:
+					LPF_Flag = True
+					demStage.LPF = 1.0
+				elif s in ["n", "N", "no", "No", "NO", "not", "NOT", "Not"]:
+					LPF_Flag = False
+				else:
+					printErr("Try again")
+		while demStage.LPF == -1.0:
+			try:
+				if demStage.typeDemolition == 1:
+					print "Warning: Literary data LPF=0.1-0.3"
+				if demStage.typeDemolition == 2:
+					print "Warning: Literary data LPF=0.1"
+				print colored("Enter the Leak Path Factor (LPF)", 'green')
+				demStage.LPF = raw_input()
+				t = type(demStage.LPF)
+				demStage.LPF = float(demStage.LPF)
+				if demStage.LPF > 1:
+					raise MoreOne()
+				if demStage.LPF<0:
+					raise LessZero()
+			except ValueError as err:
+				demStage.LPF = -1.0
+				printErr("Error: Particle-size multiplier must be int, not {0}!".format(t))
+			except LessZero as err:
+				demStage.LPF = -1.0
+				printErr("Error: Particle-size multiplier must be more than zero!")
+			except MoreOne as err:
+				demStage.LPF = -1.0
+				printErr("Error: Particle-size multiplier must be less than one!")
 		allStages.append(copy.deepcopy(demStage))
 		del demStage
+		printEq()
 	return allStages
 
-def readStages(pti):
-	
-	return 
-	
-def main(pti, filename, oFileFolder):
+def readStages(iFilePath):
+	allStages = []
+	et = xml.etree.ElementTree.parse(iFilePath)
+	root = et.getroot()
+	stages = root.findall('stage')
 
-	if pti == "":
+	for stage in stages:
+		
+		stageNumber = stage.find('stageNumber')
+		stageNumber = stageNumber.text.split(" ")[-1]
+		demStage = demolitionStage(float(stageNumber))
+		print stageNumber
+
+		demStage.typeDemolition = int(stage.find("typeOfDemolition").attrib["typeDem"])
+		nuclides = stage.find('nuclides')
+		
+		for nuclide in nuclides.findall('activity'):
+			#print nuclide
+			act = float(nuclide.text)
+			nuc = nuclide.attrib["nuclide"]
+			#print act, nuc
+			demStage.nuclides.append([nuc, act])
+		
+		demStage.DR = float(stage.find("DR").text)
+		
+		ARF_SUM = stage.find("ARF_SUM")
+		demStage.ARF = float(ARF_SUM.find("ARF").text)
+		try:
+			demStage.ARFdrop = float(ARF_SUM.find("ARFdrop").text)
+			demStage.ARFsize = float(ARF_SUM.find("ARFsize").text)
+		except AttributeError as err:
+			pass
+		
+		demStage.LPF = float(stage.find("LPF").text)
+		
+		#print 	demStage.nuclides
+		allStages.append(copy.deepcopy(demStage))
+		del demStage
+	
+	return allStages
+	
+	
+"""
+class demolitionStage():
+	def __init__(self, stage):
+		self.stage = stage
+		self.nuclides = []
+		self.typeDemolition = 0
+		self.typeDemolitionText = ""
+		self.DR = -1.0
+		self.ARF = -1.0
+		self.ARFdrop = -1.0
+		self.AFRsize = 1.0	
+"""
+def main(iFilePath, filename, oFileFolder):
+
+	if iFilePath == "":
 		allStages = defStages()
+		#Создаем XML
+		createXML(allStages, oFileFolder, filename)
 	else:
-		allStages = readStages(pti)
-	#Создаем XML
-	createXML(allStages, oFileFolder, filename)
+		allStages = readStages(iFilePath)
+		createXML(allStages, "./", "wow.xml")
 	print "Done!"
 	return
 	
@@ -350,13 +443,13 @@ if __name__ == "__main__":
 	required = parser.add_argument_group('required arguments')
 	optional = parser.add_argument_group('optional arguments')
 	
-	optional.add_argument('--pti', action = 'store', dest='pti',  type=str, help='Path to input file (with name)', required=False, default = "")
+	optional.add_argument('--ifp', action = 'store', dest='iFilePath',  type=str, help='Path to input file (with name)', required=False, default = "")
 	optional.add_argument('--fName', action = 'store', dest='filename',  type=str, help='Output filename', required=False, default = "new_xml")
 	optional.add_argument('--ofnf', action = 'store', dest='oFileNewFolder',metavar='NEW_FOLDER', type=str, help='path to the new output folder for output files', required=False, default=mypath)
 	
 	args_new = parser.parse_args()
 	oFileNewFolder = args_new.oFileNewFolder
-	pti = args_new.pti
+	iFilePath = args_new.iFilePath
 	if oFileNewFolder != mypath:
 		try:
 			os.makedirs(oFileNewFolder)
@@ -364,4 +457,4 @@ if __name__ == "__main__":
 			print "Warning! {0}".format(err)
 	filename = args_new.filename
 	filename = filename+".xml"
-	sys.exit(main(pti, filename, oFileNewFolder))
+	sys.exit(main(iFilePath, filename, oFileNewFolder))
