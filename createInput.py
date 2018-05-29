@@ -10,6 +10,7 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from termcolor import colored
 #print colored('hello', 'red'), colored('world', 'green')
+
 class demolitionStage():
 	def __init__(self, stage):
 		self.stage = stage
@@ -20,6 +21,8 @@ class demolitionStage():
 		self.ARFdrop = -1.0
 		self.ARFsize = 1.0
 		self.LPF = -1.0
+		self.RF = -1.0
+		
 class InvalidTypeARF(Exception):
 	pass
 
@@ -50,6 +53,16 @@ def printEq():
 	print
 	return
 	
+"""
+	#Вводим RF для ручной обработки и хранения
+	RFdrop = xml.etree.ElementTree.Element("RFdrop")
+	for RFpart, RFper in ([[0.0, 0.11],[2.5, 0.09],[5.0, 0.15],[10.0, 0.13],[15.0, 0.26],[30.0, 0.26]]):
+		rf = xml.etree.ElementTree.SubElement(LPFdrop, "RF", partSize=str(RFpart))
+		rf.text = "{0}".format(RFper)
+	root.append(LPFdrop)
+"""	
+	
+
 def createXML(allStages, oFileFolder, filename):
 	root = xml.etree.ElementTree.Element("demolitionStage")
 	for stageId, stage in enumerate(allStages):
@@ -92,8 +105,27 @@ def createXML(allStages, oFileFolder, filename):
 		#Записываем LPF
 		elLPF = xml.etree.ElementTree.SubElement(element, "LPF")
 		elLPF.text = "{0}".format(stage.LPF)
+
+		#Записываем RF
+		elRF = xml.etree.ElementTree.SubElement(element, "RF")
+		elRF.text = "{0}".format(stage.RF)
+		
 		root.append(element)
 		
+	#Вводим LPF для падения
+	LPFdrop = xml.etree.ElementTree.Element("LPFdrop")
+	for LPFpart, LPFper in ([[0.0, 0.95],[2.5, 0.60],[5.0, 0.30],[10.0, 0.25],[15.0, 0.25],[30.0, 0.25]]):
+		lpf = xml.etree.ElementTree.SubElement(LPFdrop, "LPF", partSize=str(LPFpart))
+		lpf.text = "{0}".format(LPFper)
+	root.append(LPFdrop)
+
+	#Вводим RF при защитных мерах
+	RFdrop = xml.etree.ElementTree.Element("RFdrop")
+	for RFpart, RFper in ([[0.0, 0.72],[2.5, 0.24],[5.0, 0.02],[10.0, 0.009],[15.0, 0.0017],[30.0, 0.0017]]):
+		rf = xml.etree.ElementTree.SubElement(RFdrop, "RF", partSize=str(RFpart))
+		rf.text = "{0}".format(RFper)
+	root.append(RFdrop)
+	
 	tree = xml.etree.ElementTree.ElementTree(root)
 	try:
 		tree.write(oFileFolder+"/"+filename, "UTF-8")
@@ -250,46 +282,32 @@ def defStages():
 					printErr("Error: Value must be int, not {0}!!!".format(t))
 			valFix = [0.001, 0.0001, 0.00001]
 			demStage.ARF = valFix[typeFix]
-			if demStage.typeDemolition == 1:
-				drop = None
-				while drop == None:
-					print "Consider falling? [Y/n]"
-					s = raw_input()
-					if s in ["y", "Y", "Yes", "yes", "YES", "д", "Д", "да", "ДА"]:
-						drop = True
-					elif s in ["n", "N", "no", "No", "NO", "н", "Н", "Нет", "НЕТ", "нет", "not", "NOT", "Not"]:
-						drop = False
-					else:
-						printErr("Try again")
-				if drop:
-					matType = -1
-					while matType == -1:
-						try:
-							matType = raw_input("Enter the type of material:\n1 - Concrete;\n2 - Sheet methal.\n")
-							t = type(matType)
-							matType = int(matType)
-							if matType not in [1,2]:
-								printErr( "Error: The type of material must be 1 or 2!")
-								matType = -1
-						except ValueError:
-							printErr( "Error: The type of material must be int, not {0}".format(t))
-					ARFdrop = [2.3e-06, 1.0e-06]
-					demStage.ARFdrop = ARFdrop[matType-1]
-					
-					
-			elif demStage.typeDemolition == 2:
-				trash = None
-				while trash == None:
-					print "Consider garbage collection? [Y/n]"
-					s = raw_input()
-					if s in ["y", "Y", "Yes", "yes", "YES"]:
-						trash = True
-					elif s in ["n", "N", "no", "No", "NO", "not", "NOT", "Not"]:
-						trash = False
-					else:
-						printErr("Try again")
-				if trash:
-					demStage.ARFdrop = 2.3e-06
+
+			drop = None
+			while drop == None:
+				print "Consider falling? [Y/n]"
+				s = raw_input()
+				if s in ["y", "Y", "Yes", "yes", "YES"]:
+					drop = True
+				elif s in ["n", "N", "no", "No", "NO", "not", "NOT", "Not"]:
+					drop = False
+				else:
+					printErr("Try again")
+			if drop:
+				matType = -1
+				while matType == -1:
+					try:
+						matType = raw_input("Enter the type of material:\n1 - Concrete;\n2 - Sheet methal.\n")
+						t = type(matType)
+						matType = int(matType)
+						if matType not in [1,2]:
+							printErr( "Error: The type of material must be 1 or 2!")
+							matType = -1
+					except ValueError:
+						printErr( "Error: The type of material must be int, not {0}".format(t))
+				ARFdrop = [2.3e-06, 1.0e-06]
+				demStage.ARFdrop = ARFdrop[matType-1]
+
 		sizeFlag = None
 		while sizeFlag == None:
 			print "Consider particle-size multiplier? Considerativity set to 1.0 [Y/n]"
@@ -322,6 +340,7 @@ def defStages():
 					size = -1.0
 					printErr("Error: Particle-size multiplier must be less than one!")
 			demStage.ARFsize = size
+			
 		printEq()
 		if demStage.typeDemolition == 2:
 			LPF_Flag = None
@@ -335,6 +354,8 @@ def defStages():
 					LPF_Flag = False
 				else:
 					printErr("Try again")
+					
+		#Вводим LPF
 		while demStage.LPF == -1.0:
 			try:
 				if demStage.typeDemolition == 1:
@@ -358,9 +379,34 @@ def defStages():
 			except MoreOne as err:
 				demStage.LPF = -1.0
 				printErr("Error: Particle-size multiplier must be less than one!")
+				
+		#Вводим RF
+		printEq()
+		while demStage.RF == -1.0:
+			try:
+
+				print "Warning: Literary data RF=1"
+				print colored("Enter the Respirable Factor (RF)", 'green')
+				demStage.RF = raw_input()
+				t = type(demStage.RF)
+				demStage.RF = float(demStage.RF)
+				if demStage.RF > 1:
+					raise MoreOne()
+				if demStage.RF<0:
+					raise LessZero()
+			except ValueError as err:
+				demStage.RF = -1.0
+				printErr("Error: Particle-size multiplier must be int, not {0}!".format(t))
+			except LessZero as err:
+				demStage.RF = -1.0
+				printErr("Error: Particle-size multiplier must be more than zero!")
+			except MoreOne as err:
+				demStage.RF = -1.0
+				printErr("Error: Particle-size multiplier must be less than one!")
 		allStages.append(copy.deepcopy(demStage))
 		del demStage
 		printEq()
+		
 	return allStages
 
 def readStages(iFilePath):
