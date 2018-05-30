@@ -8,7 +8,7 @@ int main()
 {
     demolitionStage ds;
     cout<<ds.ARF<<endl;
-    QString pathToXML(".\\inputData.xml");
+    QString pathToXML("D:/tasks/2018/demolition-master/calcDem/inputData.xml");
     XMLReader aa(pathToXML);
     cout << "Hello World!" << endl;
     return 0;

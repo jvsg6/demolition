@@ -20,6 +20,7 @@ class demolitionStage
 
 
     demolitionStage();
+    void clean();
     ~demolitionStage();
 };
 
