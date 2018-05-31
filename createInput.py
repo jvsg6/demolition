@@ -27,6 +27,7 @@ class demolitionStage():
 		self.Density = -1.0
 		self.Heigh = -1.0
 		self.LPFdrop = -1.0
+		
 class InvalidTypeARF(Exception):
 	pass
 
@@ -97,8 +98,8 @@ def createXML(allStages, oFileFolder, filename):
 		elDR.text = "{0}".format(stage.DR)
 		
 		#Записываем ARF
-		elARF = xml.etree.ElementTree.SubElement(element, "ARF_SUM")
-		elSubARF = xml.etree.ElementTree.SubElement(elARF, "ARF")
+		elARF = xml.etree.ElementTree.SubElement(element, "ARF")
+		elSubARF = xml.etree.ElementTree.SubElement(elARF, "ARFdem")
 		elSubARF.text = "{0}".format(stage.ARF)
 		
 		
@@ -121,28 +122,34 @@ def createXML(allStages, oFileFolder, filename):
 		
 		#Записываем LPF
 		elLPF = xml.etree.ElementTree.SubElement(element, "LPF")
-		elLPF.text = "{0}".format(stage.LPF)
+		elLPFdem = xml.etree.ElementTree.SubElement(elLPF, "LPFdem")
+		elLPFdem.text = "{0}".format(stage.LPF)
+
+		#Вводим LPF для падения
+		if stage.LPFdrop == 0.0:
+			LPFdrop = xml.etree.ElementTree.SubElement(elLPF, "LPFdrop")
+			for LPFpart, LPFper in ([[0.0, 0.95],[2.5, 0.60],[5.0, 0.30],[10.0, 0.25],[15.0, 0.25],[30.0, 0.25]]):
+				lpf = xml.etree.ElementTree.SubElement(LPFdrop, "LPFp", partSize=str(LPFpart))
+				lpf.text = "{0}".format(LPFper)
+		elif (stage.LPFdrop != 0.0) and (stage.LPFdrop != -1.0):
+			LPFdrop = xml.etree.ElementTree.SubElement(elLPF, "LPFdrop")
+			LPFdrop.text = "{0}".format(stage.LPFdrop)
+			
 
 		#Записываем RF
 		elRF = xml.etree.ElementTree.SubElement(element, "RF")
-		elRF.text = "{0}".format(stage.RF)
+		elRFdem = xml.etree.ElementTree.SubElement(elRF, "RFdem")
+		elRFdem.text = "{0}".format(stage.RF)
 		
-
-		
-		#Вводим LPF для падения
-		if stage.LPFdrop == 0.0:
-			LPFdrop = xml.etree.ElementTree.SubElement(element, "LPFdrop")
-			for LPFpart, LPFper in ([[0.0, 0.95],[2.5, 0.60],[5.0, 0.30],[10.0, 0.25],[15.0, 0.25],[30.0, 0.25]]):
-				lpf = xml.etree.ElementTree.SubElement(LPFdrop, "LPF", partSize=str(LPFpart))
-				lpf.text = "{0}".format(LPFper)
-
-
 		#Вводим RF при защитных мерах
 		if stage.LPFdrop == 0.0:
-			RFdrop = xml.etree.ElementTree.SubElement(element, "RFdrop")
+			RFdrop = xml.etree.ElementTree.SubElement(elRF, "RFdrop")
 			for RFpart, RFper in ([[0.0, 0.72],[2.5, 0.24],[5.0, 0.02],[10.0, 0.009],[15.0, 0.0017],[30.0, 0.0017]]):
-				rf = xml.etree.ElementTree.SubElement(RFdrop, "RF", partSize=str(RFpart))
+				rf = xml.etree.ElementTree.SubElement(RFdrop, "RFp", partSize=str(RFpart))
 				rf.text = "{0}".format(RFper)
+		elif (stage.LPFdrop != 0.0) and (stage.LPFdrop != -1.0):
+			elRFdrop = xml.etree.ElementTree.SubElement(elRF, "RFdrop")
+			elRFdrop.text = "{0}".format(stage.RF)
 		root.append(element)
 	
 	tree = xml.etree.ElementTree.ElementTree(root)
@@ -165,8 +172,10 @@ def defStages():
 			if numDem<0:
 				raise LessZero()
 		except ValueError as err:
+			numDem = 0
 			printErr( "Error: Demolitions stage must be int, not {0}!".format(t))
 		except LessZero as err:
+			numDem = 0
 			printErr("Error: Demolitions stage must be more than zero!")
 	allStages = []
 	#Цикл по всем этапам сноса
@@ -186,6 +195,7 @@ def defStages():
 					printErr( "Error: The type of demolition must be 1 or 2!")
 					demStage.typeDemolition = 0
 			except ValueError:
+				demStage.typeDemolition = 0
 				printErr( "Error: The type of demolition must be int, not {0}".format(t))
 		printEq()
 		#Вводим количество нуклидов
@@ -196,6 +206,7 @@ def defStages():
 				t = type(numNucl)
 				numNucl = int(numNucl)
 			except ValueError:
+				numNucl = 0
 				printErr( "Error: The number of nuclides must be int, not {0}".format(t))
 		print
 		#Вводим нуклиды		
@@ -209,6 +220,7 @@ def defStages():
 					t = type(nameNucl)
 					nameNucl = str(nameNucl)
 				except ValueError: #Добавить проверку на совпадение в бд
+					nameNucl = ""
 					printErr( "Error: The name of nuclides must be str, not {0}".format(t))
 					
 			valNucl = 0.0
@@ -218,6 +230,7 @@ def defStages():
 					t = type(valNucl)
 					valNucl = float(valNucl)
 				except ValueError: #Добавить ввод в граммах и перевод его в активность и наоборот
+					valNucl = 0.0
 					printErr( "Error: The activity of nuclides must be float")
 			print
 			nuclides.append([nameNucl,  valNucl])
@@ -245,6 +258,7 @@ def defStages():
 					if demStage.DR>1:
 						raise MoreOne()
 			except ValueError as err:
+				demStage.DR = -1.0
 				printErr( "Error: The damage ratio must be float, not {0}".format(t))
 			except MoreOne as err:
 				demStage.DR = -1.0
@@ -253,7 +267,7 @@ def defStages():
 		printEq()
 		#Вводим ARF
 		typeARF = 0.0
-		print "Airborne Release Fraction (ARF)"
+		print "Airborne Release Fraction (ARF) for demolition"
 		while typeARF == 0.0:
 			try:
 				print "\nEnter: \n\t1 if you want to enter ARF manually; \n\t2 if you want to enter ARF using the program."
@@ -263,9 +277,12 @@ def defStages():
 				if typeARF not in [1,2]:
 					raise InvalidTypeARF()
 			except ValueError as arr:
+				typeARF = 0.0
 				printErr( "Error: The ARF type should be int, not {0}".format(t) )
 			except InvalidTypeARF as err:
+				typeARF = 0.0
 				printErr( "Error: The ARF type should be 1 or 2")
+				
 		
 		drop = False
 		if typeARF == 1:	
@@ -301,124 +318,129 @@ def defStages():
 						printErr("Value must be 0, 1 or 2, not {0}".format(typeFix))
 						typeFix = -1
 				except ValueError as err:
+					typeFix = -1
 					printErr("Error: Value must be int, not {0}!!!".format(t))
 			valFix = [0.001, 0.0001, 0.00001]
 			demStage.ARF = valFix[typeFix]
 
-			drop = None
-			while drop == None:
-				print "Consider falling? [Y/n]"
-				s = raw_input()
-				if s in ["y", "Y", "Yes", "yes", "YES"]:
-					drop = True
-				elif s in ["n", "N", "no", "No", "NO", "not", "NOT", "Not"]:
-					drop = False
-				else:
-					printErr("Try again")
-			if drop:
-				matType = -1
-				while matType == -1:
+		#Определяем AFRdrop
+		drop = None
+		print "\nDetermine the ARF coefficient for the fall? [Y/n]"
+		while drop == None:
+			
+			s = raw_input()
+			if s in ["y", "Y", "Yes", "yes", "YES"]:
+				drop = True
+			elif s in ["n", "N", "no", "No", "NO", "not", "NOT", "Not"]:
+				drop = False
+			else:
+				printErr("Try again")
+		if drop:
+			matType = -1
+			while matType == -1:
+				try:
+					matType = raw_input("Enter:\n\t1 - To enter manually;\n\t2 - To enter using programm.\n")
+					t = type(matType)
+					matType = int(matType)
+					if matType not in [1,2]:
+						printErr( "Error: The type of enter must be 1 or 2!")
+						matType = -1
+				except ValueError:
+					matType = -1
+					printErr( "Error: The type of enter must be int, not {0}".format(t))
+			
+			if matType == 1:
+				while demStage.ARFdrop == -1.0:
 					try:
-						matType = raw_input("Enter:\n\t1 - To enter manually;\n\t2 - To enter using programm.\n")
-						t = type(matType)
-						matType = int(matType)
-						if matType not in [1,2]:
-							printErr( "Error: The type of enter must be 1 or 2!")
-							matType = -1
+						print "Enter ARFdrop"
+						demStage.ARFdrop = raw_input()
+						t = type(demStage.ARFdrop)
+						demStage.ARFdrop = float(demStage.ARFdrop)
+						if demStage.ARFdrop > 1:
+							raise MoreOne()
+						if demStage.ARFdrop<0.0:
+							raise LessZero()
+					except ValueError as err:
+						demStage.ARFdrop = -1.0
+						printErr("Error: ARFdrop must be float, not {0}!".format(t))
+					except LessZero as err:
+						demStage.ARFdrop = -1.0
+						printErr("Error: ARFdrop must be more than zero!")
+					except MoreOne as err:
+						demStage.ARFdrop = -1.0
+						printErr("Error: ARFdrop must be less than one!")
+			elif matType == 2:
+				formType = -1
+				while formType == -1:
+					try:
+						formType = raw_input("Enter:\n\t1 - To use the formula with wind and moisture;\n\t2 - To use a formula with height and density.\n")
+						t = type(formType)
+						formType = int(formType)
+						if formType not in [1,2]:
+							printErr( "Error: The type of formula must be 1 or 2!")
+							formType = -1
 					except ValueError:
-						printErr( "Error: The type of enter must be int, not {0}".format(t))
-				
-				if matType == 1:
-					while demStage.ARFdrop == -1.0:
+						formType = -1
+						printErr( "Error: The type of formula must be int, not {0}".format(t))
+				if formType == 1:
+					while demStage.WindS == -1.0:
 						try:
-							print "Enter ARFdrop"
-							demStage.ARFdrop = raw_input()
-							t = type(demStage.ARFdrop)
-							demStage.ARFdrop = float(demStage.ARFdrop)
-							if demStage.ARFdrop > 1:
-								raise MoreOne()
-							if demStage.ARFdrop<0.0:
+							demStage.WindS = raw_input("Enter Wind speed in (m/s) ")
+							t = type(demStage.WindS)
+							demStage.WindS = float(demStage.WindS)
+							if demStage.WindS<0.0:
 								raise LessZero()
 						except ValueError as err:
-							demStage.ARFdrop = -1.0
-							printErr("Error: ARFdrop must be float, not {0}!".format(t))
+							demStage.WindS = -1.0
+							printErr("Error: Wind speed must be float, not {0}!".format(t))
 						except LessZero as err:
-							demStage.ARFdrop = -1.0
-							printErr("Error: ARFdrop must be more than zero!")
-						except MoreOne as err:
-							demStage.ARFdrop = -1.0
-							printErr("Error: ARFdrop must be less than one!")
-				elif matType == 2:
-					formType = -1
-					while formType == -1:
+							demStage.WindS = -1.0
+							printErr("Error: Wind speed must be more than zero!")
+					while demStage.Wet == -1.0:
 						try:
-							formType = raw_input("Enter:\n\t1 - To use the formula with wind and moisture;\n\t2 - To use a formula with height and density.\n")
-							t = type(formType)
-							formType = int(formType)
-							if formType not in [1,2]:
-								printErr( "Error: The type of formula must be 1 or 2!")
-								formType = -1
-						except ValueError:
-							printErr( "Error: The type of formula must be int, not {0}".format(t))
-					if formType == 1:
-						while demStage.WindS == -1.0:
-							try:
-								demStage.WindS = raw_input("Enter Wind speed in (m/s) ")
-								t = type(demStage.WindS)
-								demStage.WindS = float(demStage.WindS)
-								if demStage.WindS<0.0:
-									raise LessZero()
-							except ValueError as err:
-								demStage.WindS = -1.0
-								printErr("Error: Wind speed must be float, not {0}!".format(t))
-							except LessZero as err:
-								demStage.WindS = -1.0
-								printErr("Error: Wind speed must be more than zero!")
-						while demStage.Wet == -1.0:
-							try:
-								demStage.Wet = raw_input("Enter Wetting in (%) ")
-								t = type(demStage.Wet)
-								demStage.Wet = float(demStage.Wet)
-								if demStage.Wet<0.0:
-									raise LessZero()
-								if demStage.Wet>100.0:
-									raise MoreH()
-							except ValueError as err:
-								demStage.Wet = -1.0
-								printErr("Error: Wetting must be float, not {0}!".format(t))
-							except LessZero as err:
-								demStage.Wet = -1.0
-								printErr("Error: Wetting must be more than zero!")
-							except MoreH as err:
-								demStage.Wet = -1.0
-								printErr("Error: Wetting must be less than 100%!")
-					elif formType == 2:
-						while demStage.Heigh == -1.0:
-							try:
-								demStage.Heigh = raw_input("Enter Heigh in (sm) ")
-								t = type(demStage.Heigh)
-								demStage.Heigh = float(demStage.Heigh)
-								if demStage.Heigh<0.0:
-									raise LessZero()
-							except ValueError as err:
-								demStage.Heigh = -1.0
-								printErr("Error: Heigh must be float, not {0}!".format(t))
-							except LessZero as err:
-								demStage.Heigh = -1.0
-								printErr("Error: Heigh must be more than zero!")
-						while demStage.Density == -1.0:
-							try:
-								demStage.Density = raw_input("Enter Density in (g/sm^3) ")
-								t = type(demStage.Density)
-								demStage.Density = float(demStage.Density)
-								if demStage.Density<0.0:
-									raise LessZero()
-							except ValueError as err:
-								demStage.Density = -1.0
-								printErr("Error: Density must be float, not {0}!".format(t))
-							except LessZero as err:
-								demStage.Density = -1.0
-								printErr("Error: Density must be more than zero!")
+							demStage.Wet = raw_input("Enter Wetting in (%) ")
+							t = type(demStage.Wet)
+							demStage.Wet = float(demStage.Wet)
+							if demStage.Wet<0.0:
+								raise LessZero()
+							if demStage.Wet>100.0:
+								raise MoreH()
+						except ValueError as err:
+							demStage.Wet = -1.0
+							printErr("Error: Wetting must be float, not {0}!".format(t))
+						except LessZero as err:
+							demStage.Wet = -1.0
+							printErr("Error: Wetting must be more than zero!")
+						except MoreH as err:
+							demStage.Wet = -1.0
+							printErr("Error: Wetting must be less than 100%!")
+				elif formType == 2:
+					while demStage.Heigh == -1.0:
+						try:
+							demStage.Heigh = raw_input("Enter Heigh in (sm) ")
+							t = type(demStage.Heigh)
+							demStage.Heigh = float(demStage.Heigh)
+							if demStage.Heigh<0.0:
+								raise LessZero()
+						except ValueError as err:
+							demStage.Heigh = -1.0
+							printErr("Error: Heigh must be float, not {0}!".format(t))
+						except LessZero as err:
+							demStage.Heigh = -1.0
+							printErr("Error: Heigh must be more than zero!")
+					while demStage.Density == -1.0:
+						try:
+							demStage.Density = raw_input("Enter Density in (g/sm^3) ")
+							t = type(demStage.Density)
+							demStage.Density = float(demStage.Density)
+							if demStage.Density<0.0:
+								raise LessZero()
+						except ValueError as err:
+							demStage.Density = -1.0
+							printErr("Error: Density must be float, not {0}!".format(t))
+						except LessZero as err:
+							demStage.Density = -1.0
+							printErr("Error: Density must be more than zero!")
 				#ARFdrop = [2.3e-06, 1.0e-06]
 				#demStage.ARFdrop = ARFdrop[matType-1]
 
@@ -432,6 +454,7 @@ def defStages():
 				sizeFlag = False
 			else:
 				printErr("Try again")	
+
 		if sizeFlag:
 			size = -1.0
 			while size == -1.0:
@@ -531,7 +554,7 @@ def defStages():
 						demStage.LPFdrop = -1.0
 						printErr("Error: LPFdrop must be less than one!")
 			elif LPFdropType == 2:
-				demStage.LPFdrop == 0.0
+				demStage.LPFdrop = 0.0
 		#Вводим RF
 		printEq()
 		print "Respirable Fraction (RF)"
