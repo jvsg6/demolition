@@ -4,35 +4,15 @@
 		<stageNumber>stage 1</stageNumber>
 		<typeOfDemolition typeDem="1">Demolition of Cell with Shears</typeOfDemolition>
 		<nuclides>
-			<activity nuclide="I-131">777.0</activity>
+			<activity nuclide="I-131">700.0</activity>
+			<activity nuclide="I-129">800.0</activity>
 		</nuclides>
-		<DR>0.45</DR>
-		<ARF>
-			<ARFdem>0.55</ARFdem>
-			<ARFsize>1.0</ARFsize>
-		</ARF>
-		<LPF>
-			<LPFdem>0.3</LPFdem>
-		</LPF>
-		<RF>
-			<RFdem>1.0</RFdem>
-		</RF>
-	</stage>
-	<stage>
-		<stageNumber>stage 2</stageNumber>
-		<typeOfDemolition typeDem="2">Demolition of Cell with Explosive</typeOfDemolition>
-		<nuclides>
-			<activity nuclide="U-235">777.0</activity>
-			<activity nuclide="U-238">888.0</activity>
-			<activity nuclide="Cs-134">999.0</activity>
-			<activity nuclide="Cs-136">1111.0</activity>
-		</nuclides>
-		<DR>0.5</DR>
+		<DR>0.4</DR>
 		<ARF>
 			<ARFdem>0.0001</ARFdem>
 			<ARFdrop>
 				<Wettering>2.0</Wettering>
-				<WindSpeed>11.0</WindSpeed>
+				<WindSpeed>3.2</WindSpeed>
 			</ARFdrop>
 			<ARFsize>1.0</ARFsize>
 		</ARF>
@@ -48,7 +28,7 @@
 			</LPFdrop>
 		</LPF>
 		<RF>
-			<RFdem>1.0</RFdem>
+			<RFdem>0.99</RFdem>
 			<RFdrop>
 				<RFp partSize="0.0">0.72</RFp>
 				<RFp partSize="2.5">0.24</RFp>
@@ -60,23 +40,45 @@
 		</RF>
 	</stage>
 	<stage>
-		<stageNumber>stage 3</stageNumber>
+		<stageNumber>stage 2</stageNumber>
 		<typeOfDemolition typeDem="1">Demolition of Cell with Shears</typeOfDemolition>
 		<nuclides>
-			<activity nuclide="Sr-89">456.0</activity>
+			<activity nuclide="Sr-89">777.0</activity>
+			<activity nuclide="Sr-90">888.0</activity>
 		</nuclides>
-		<DR>0.3</DR>
+		<DR>0.5</DR>
 		<ARF>
-			<ARFdem>0.01</ARFdem>
-			<ARFdrop g="980">
-				<Density>7.0</Density>
+			<ARFdem>1e-05</ARFdem>
+			<ARFdrop>
+				<Density>7.8</Density>
 				<Heigh>500.0</Heigh>
 			</ARFdrop>
+			<ARFsize>0.8</ARFsize>
+		</ARF>
+		<LPF>
+			<LPFdem>0.2</LPFdem>
+			<LPFdrop>0.25</LPFdrop>
+		</LPF>
+		<RF>
+			<RFdem>1.0</RFdem>
+			<RFdrop>1.0</RFdrop>
+		</RF>
+	</stage>
+	<stage>
+		<stageNumber>stage 3</stageNumber>
+		<typeOfDemolition typeDem="2">Demolition of Cell with Explosive</typeOfDemolition>
+		<nuclides>
+			<activity nuclide="Cs-134">963.0</activity>
+			<activity nuclide="Cs-136">136.0</activity>
+		</nuclides>
+		<DR>0.55</DR>
+		<ARF>
+			<ARFdem>0.001</ARFdem>
 			<ARFsize>1.0</ARFsize>
 		</ARF>
 		<LPF>
-			<LPFdem>0.3</LPFdem>
-			<LPFdrop>0.11</LPFdrop>
+			<LPFdem>0.11</LPFdem>
+			<LPFdrop>0.15</LPFdrop>
 		</LPF>
 		<RF>
 			<RFdem>1.0</RFdem>
@@ -87,20 +89,18 @@
 		<stageNumber>stage 4</stageNumber>
 		<typeOfDemolition typeDem="2">Demolition of Cell with Explosive</typeOfDemolition>
 		<nuclides>
-			<activity nuclide="Meow-777">555.0</activity>
+			<activity nuclide="U-235">1000.0</activity>
 		</nuclides>
-		<DR>0.5</DR>
+		<DR>0.45</DR>
 		<ARF>
-			<ARFdem>1e-05</ARFdem>
+			<ARFdem>0.0012</ARFdem>
 			<ARFsize>1.0</ARFsize>
 		</ARF>
 		<LPF>
 			<LPFdem>1.0</LPFdem>
-			<LPFdrop>0.04</LPFdrop>
 		</LPF>
 		<RF>
 			<RFdem>1.0</RFdem>
-			<RFdrop>1.0</RFdrop>
 		</RF>
 	</stage>
 </demolitionStage>
