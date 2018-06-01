@@ -8,23 +8,45 @@ class demolitionStage
 {
     public:
     int stageId;
-    QVector<QString> nuclidesName;
-    QVector<float> nuclidesValue;
+
     int typeDemolition;
     float DR;
-    float ARFdem;
-    float ARFdrop;
-    float ARFsize;
-    float ARFWet;
-    float ARFWind;
-    float ARFDens;
-    float ARFH;
-    QVector<float> LPFdropValue;
-    QVector<float> LPFdropSize;
-    QVector<float> RFdropValue;
-    QVector<float> RFdropSize;
-    float LPF;
-    float RF;
+
+    struct NuclidesStruct
+    {
+        QVector<QString> nuclidesName;
+        QVector<float> nuclidesValue;
+    }Nuclides;
+
+    struct ARFstruct
+    {
+        float ARFdem;
+        float ARFdrop;
+        float ARFsize;
+        float ARFWet;
+        float ARFWind;
+        float ARFDens;
+        float ARFH;
+    } ARF;
+
+    struct LPFstruct
+    {
+        float LPFdem;
+        float LPFdrop;
+        QVector<float> LPFdropValue;
+        QVector<float> LPFdropSize;
+    }LPF;
+
+    struct RFstruct
+    {
+        float RFdem;
+        float RFdrop;
+        QVector<float> RFdropValue;
+        QVector<float> RFdropSize;
+    }RF;
+
+
+
 
 
     demolitionStage();
@@ -32,4 +54,7 @@ class demolitionStage
     ~demolitionStage();
 };
 
+
 #endif // DEMOLITIONSTAGE_H
+
+

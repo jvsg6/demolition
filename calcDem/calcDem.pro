@@ -16,3 +16,4 @@ SOURCES += main.cpp \
 HEADERS += \
     xmlparsing.h \
     demolitionstage.h
+INCLUDEPATH += $$PWD

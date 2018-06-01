@@ -8,7 +8,7 @@ using namespace std;
 int main()
 {
     demolitionStage ds;
-    cout<<ds.ARFdem<<endl;
+    cout<<ds.ARF.ARFdem<<endl;
     //QDir::current().absolutePath();
     QString path = QDir::current().absolutePath();
     QString pathToInput = path + "/inputData.xml";

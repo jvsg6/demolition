@@ -101,9 +101,9 @@ void XMLReader::ParseNuclides(QXmlStreamReader& xml, demolitionStage& demStage)
         if (xml.name().toString() == "activity")
         {
             cout<<(xml.text().toString()).toStdString()<<endl;
-            demStage.nuclidesName.append(xml.attributes().value("nuclide").toString());
+            demStage.Nuclides.nuclidesName.append(xml.attributes().value("nuclide").toString());
             xml.readNext();
-            demStage.nuclidesValue.append(xml.text().toString().toFloat());
+            demStage.Nuclides.nuclidesValue.append(xml.text().toString().toFloat());
             xml.readNext();
             xml.readNext();
         }
@@ -124,29 +124,34 @@ void XMLReader::ParseARF(QXmlStreamReader& xml, demolitionStage& demStage)
     {
         if (xml.name() == "ARFdem")
         {
-            demStage.ARFdem = (this->ParseValue(xml, demStage, "ARFdem")).toFloat();
+            demStage.ARF.ARFdem = (this->ParseValue(xml, demStage, "ARFdem")).toFloat();
         }
         if (xml.name() == "ARFsize")
         {
-            demStage.ARFsize = (this->ParseValue(xml, demStage, "ARFsize")).toFloat();
+            demStage.ARF.ARFsize = (this->ParseValue(xml, demStage, "ARFsize")).toFloat();
         }
         if (xml.name() == "ARFdrop")
         {
-            if (xml.name() == "Wettering")
+            xml.readNext();
+            while(xml.name().toString() != "ARFdrop")
             {
-                demStage.ARFWet = (this->ParseValue(xml, demStage, "Wettering")).toFloat();
-            }
-            if (xml.name() == "WindSpeed")
-            {
-                demStage.ARFWind = (this->ParseValue(xml, demStage, "WindSpeed")).toFloat();
-            }
-            if (xml.name() == "Density")
-            {
-                demStage.ARFDens = (this->ParseValue(xml, demStage, "Density")).toFloat();
-            }
-            if (xml.name() == "Heigh")
-            {
-                demStage.ARFH = (this->ParseValue(xml, demStage, "Heigh")).toFloat();
+                if (xml.name() == "Wettering")
+                {
+                    demStage.ARF.ARFWet = (this->ParseValue(xml, demStage, "Wettering")).toFloat();
+                }
+                if (xml.name() == "WindSpeed")
+                {
+                    demStage.ARF.ARFWind = (this->ParseValue(xml, demStage, "WindSpeed")).toFloat();
+                }
+                if (xml.name() == "Density")
+                {
+                    demStage.ARF.ARFDens = (this->ParseValue(xml, demStage, "Density")).toFloat();
+                }
+                if (xml.name() == "Heigh")
+                {
+                    demStage.ARF.ARFH = (this->ParseValue(xml, demStage, "Heigh")).toFloat();
+                }
+                xml.readNext();
             }
         }
         xml.readNext();
@@ -156,20 +161,36 @@ void XMLReader::ParseLPF(QXmlStreamReader& xml, demolitionStage& demStage)
 {
     xml.readNext();
     xml.readNext();
+    bool once = true;
     while(xml.name().toString() != "LPF")
     {
         if(xml.name() == "LPFdem")
         {
-            demStage.LPF = (this->ParseValue(xml, demStage, "LPFdem")).toFloat();
+            demStage.LPF.LPFdem = (this->ParseValue(xml, demStage, "LPFdem")).toFloat();
         }
 
         if(xml.name() == "LPFdrop")
         {
             xml.readNext();
-            while(xml.name().toString() != "LPFdrop")
-            {
-                this->ParseValueWithAttr(xml, demStage.LPFdropValue,demStage.LPFdropSize,"LPFdrop", "LPFp", "partSize" );
-            }
+            bool flag;
+            QString value = xml.text().toString();
+            flag = value.contains(".", Qt::CaseInsensitive) or value.contains("0", Qt::CaseInsensitive) or value.contains("1", Qt::CaseInsensitive);
+           if (once)
+           {
+                if (flag)
+                {
+                    demStage.LPF.LPFdem = value.toFloat();
+                    once = false;
+                }
+                else
+                {
+                    while(xml.name().toString() != "LPFdrop")
+                    {
+                        this->ParseValueWithAttr(xml, demStage.LPF.LPFdropValue,demStage.LPF.LPFdropSize,"LPFdrop", "LPFp", "partSize" );
+                        once = false;
+                    }
+                }
+           }
         }
         xml.readNext();
     }
@@ -178,21 +199,48 @@ void XMLReader::ParseRF(QXmlStreamReader& xml, demolitionStage& demStage)
 {
     xml.readNext();
     xml.readNext();
+    bool once = true;
     while(xml.name().toString() != "RF")
     {
         if(xml.name() == "RFdem")
         {
-            demStage.LPF = (this->ParseValue(xml, demStage, "LPFdem")).toFloat();
+            demStage.RF.RFdem = (this->ParseValue(xml, demStage, "RFdem")).toFloat();
         }
-
+        /*if(xml.name() == "RFdrop")
+        {
+            demStage.RF.RFdrop = (this->ParseValue(xml, demStage, "RFdrop")).toFloat();
+        }*/
         if(xml.name() == "RFdrop")
+        {
+           xml.readNext();
+           bool flag;
+           QString value = xml.text().toString();
+           flag = value.contains(".", Qt::CaseInsensitive) or value.contains("0", Qt::CaseInsensitive) or value.contains("1", Qt::CaseInsensitive);
+           if (once)
+           {
+                if (flag)
+                {
+                    demStage.RF.RFdrop = value.toFloat();
+                    once = false;
+                }
+                else
+                {
+                    while(xml.name().toString() != "RFdrop")
+                    {
+                        this->ParseValueWithAttr(xml, demStage.RF.RFdropValue,demStage.RF.RFdropSize,"RFdrop", "RFp", "partSize" );
+                        once = false;
+                    }
+                }
+           }
+        }
+        /*if(xml.name() == "RFdrop")
         {
             xml.readNext();
             while(xml.name().toString() != "RFdrop")
             {
-                this->ParseValueWithAttr(xml, demStage.RFdropValue,demStage.RFdropSize,"RFdrop", "RFp", "partSize" );
+                this->ParseValueWithAttr(xml, demStage.RF.RFdropValue,demStage.RF.RFdropSize,"RFdrop", "RFp", "partSize" );
             }
-        }
+        }*/
         xml.readNext();
     }
 }

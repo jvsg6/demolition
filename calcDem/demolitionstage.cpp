@@ -9,21 +9,29 @@ demolitionStage::demolitionStage()
     stageId = -1;
     typeDemolition = 0;
     DR = -1.0;
-    ARFdem = -1.0;
-    ARFdrop = -1.0;
-    ARFsize = 1.0;
-    LPF = -1.0;
-    RF = -1.0;
-    nuclidesName.erase(nuclidesName.begin(), nuclidesName.end());
-    nuclidesValue.erase(nuclidesValue.begin(), nuclidesValue.end());
-    ARFWet = -1.0;
-    ARFWind = -1.0;
-    ARFDens = -1.0;
-    ARFH = -1.0;
-    LPFdropValue.erase(LPFdropValue.begin(), LPFdropValue.end());
-    LPFdropSize.erase(LPFdropSize.begin(), LPFdropSize.end());
-    RFdropValue.erase(RFdropValue.begin(), RFdropValue.end());
-    RFdropSize.erase(RFdropSize.begin(), RFdropSize.end());
+
+
+
+    Nuclides.nuclidesName.erase(Nuclides.nuclidesName.begin(), Nuclides.nuclidesName.end());
+    Nuclides.nuclidesValue.erase(Nuclides.nuclidesValue.begin(), Nuclides.nuclidesValue.end());
+
+    ARF.ARFWet = -1.0;
+    ARF.ARFWind = -1.0;
+    ARF.ARFDens = -1.0;
+    ARF.ARFH = -1.0;
+    ARF.ARFdem = -1.0;
+    ARF.ARFdrop = -1.0;
+    ARF.ARFsize = 1.0;
+
+    LPF.LPFdem = -1.0;
+    LPF.LPFdrop = -1.0;
+    LPF.LPFdropValue.erase(LPF.LPFdropValue.begin(), LPF.LPFdropValue.end());
+    LPF.LPFdropSize.erase(LPF.LPFdropSize.begin(), LPF.LPFdropSize.end());
+
+    RF.RFdem = -1.0;
+    RF.RFdrop = -1.0;
+    RF.RFdropValue.erase(RF.RFdropValue.begin(), RF.RFdropValue.end());
+    RF.RFdropSize.erase(RF.RFdropSize.begin(), RF.RFdropSize.end());
 
 }
 void demolitionStage::clean()
@@ -32,23 +40,30 @@ void demolitionStage::clean()
     stageId = -1;
     typeDemolition = 0;
     DR = -1.0;
-    ARFdem = -1.0;
-    ARFdrop = -1.0;
-    ARFsize = 1.0;
-    LPF = -1.0;
-    RF = -1.0;
-    nuclidesName.erase(nuclidesName.begin(), nuclidesName.end());
-    nuclidesValue.erase(nuclidesValue.begin(), nuclidesValue.end());
-    ARFWet = -1.0;
-    ARFWind = -1.0;
-    ARFDens = -1.0;
-    ARFH = -1.0;
-    LPFdropValue.erase(LPFdropValue.begin(), LPFdropValue.end());
-    LPFdropSize.erase(LPFdropSize.begin(), LPFdropSize.end());
-    RFdropValue.erase(RFdropValue.begin(), RFdropValue.end());
-    RFdropSize.erase(RFdropSize.begin(), RFdropSize.end());
+
+
+    Nuclides.nuclidesName.erase(Nuclides.nuclidesName.begin(), Nuclides.nuclidesName.end());
+    Nuclides.nuclidesValue.erase(Nuclides.nuclidesValue.begin(), Nuclides.nuclidesValue.end());
+    ARF.ARFWet = -1.0;
+    ARF.ARFWind = -1.0;
+    ARF.ARFDens = -1.0;
+    ARF.ARFH = -1.0;
+    ARF.ARFdem = -1.0;
+    ARF.ARFdrop = -1.0;
+    ARF.ARFsize = 1.0;
+
+    LPF.LPFdem = -1.0;
+    LPF.LPFdrop = -1.0;
+    LPF.LPFdropValue.erase(LPF.LPFdropValue.begin(), LPF.LPFdropValue.end());
+    LPF.LPFdropSize.erase(LPF.LPFdropSize.begin(), LPF.LPFdropSize.end());
+
+    RF.RFdem = -1.0;
+    RF.RFdrop = -1.0;
+    RF.RFdropValue.erase(RF.RFdropValue.begin(), RF.RFdropValue.end());
+    RF.RFdropSize.erase(RF.RFdropSize.begin(), RF.RFdropSize.end());
 }
 demolitionStage::~demolitionStage()
 {
 
 }
+
