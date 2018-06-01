@@ -5,43 +5,12 @@
 #include "demolitionstage.h"
 #include <QDir>
 #include <cmath>
+#include <QDebug>
+#include <string>
 using namespace std;
-float calcAFR(demolitionStage::ARFstruct & drop)
-{
-    if (drop.ARFdrop == -1.0)
-    {
-        if (drop.ARFWind != -1.0)
-        {
-            return (1.6e-06)*pow(drop.ARFWind/2.2, 1.3)/pow(drop.ARFWet/2, 1.4)*drop.ARFsize;
-        }
-        else
-        {
-            return (2.0e-11)*980.0*drop.ARFDens*drop.ARFH*drop.ARFsize;
-        }
-    }
-    else
-    {
-        return drop.ARFdrop*drop.ARFsize;
-    }
-
-}
-
-float calcLPF_RF(demolitionStage::LPFstruct & dropLPF, demolitionStage::RFstruct & dropRF)
-{
-    if (dropLPF.LPFdrop != -1.0)
-    {
-        return dropLPF.LPFdrop*dropRF.RFdrop;
-    }
-    else
-    {
-        float sum = 0.0;
-        for (int i = 0 ; i<dropLPF.LPFdropSize.size(); i++)
-            sum += dropLPF.LPFdropValue[i]*dropRF.RFdropValue[i];
-        return sum;
-    }
-}
-
-
+float calcAFR(demolitionStage::ARFstruct &);
+float calcLPF_RF(demolitionStage::LPFstruct &, demolitionStage::RFstruct & );
+void writeResults(QVector<float> &, QVector<float> & STdropArr);
 int main()
 {
     demolitionStage ds;
@@ -87,6 +56,62 @@ int main()
         cout<<"\t\tDrop ";
         cout<< STdropArr[i]<<endl;
     }
+    writeResults(STdemArr,STdropArr );
     return 0;
 
+}
+
+void writeResults(QVector<float> & STdemArr,QVector<float> & STdropArr)
+{
+    QFile file("results.dat");
+    QTextStream out(&file);
+    if(file.open(QIODevice::WriteOnly))
+    {
+        file.write("Results:\n");
+        for (int i = 0 ; i<STdemArr.size(); i++)
+        {
+            out<<"\tStage "<<i<<"\n";
+            out<<"\t\tDemolition "<<STdemArr[i]<<"\n";
+            out<<"\t\tDrop "<<STdropArr[i]<<"\n";
+        }
+    qDebug()<< "File is open\n";
+    file.close();
+    }
+}
+
+
+
+float calcAFR(demolitionStage::ARFstruct & drop)
+{
+    if (drop.ARFdrop == -1.0)
+    {
+        if (drop.ARFWind != -1.0)
+        {
+            return (1.6e-06)*pow(drop.ARFWind/2.2, 1.3)/pow(drop.ARFWet/2, 1.4)*drop.ARFsize;
+        }
+        else
+        {
+            return (2.0e-11)*980.0*drop.ARFDens*drop.ARFH*drop.ARFsize;
+        }
+    }
+    else
+    {
+        return drop.ARFdrop*drop.ARFsize;
+    }
+
+}
+
+float calcLPF_RF(demolitionStage::LPFstruct & dropLPF, demolitionStage::RFstruct & dropRF)
+{
+    if (dropLPF.LPFdrop != -1.0)
+    {
+        return dropLPF.LPFdrop*dropRF.RFdrop;
+    }
+    else
+    {
+        float sum = 0.0;
+        for (int i = 0 ; i<dropLPF.LPFdropSize.size(); i++)
+            sum += dropLPF.LPFdropValue[i]*dropRF.RFdropValue[i];
+        return sum;
+    }
 }
