@@ -70,25 +70,23 @@ XMLReader::XMLReader(QString pathToXML)
         }
 
     }
-    QVector<demolitionStage> aaa = this->getDemStage();
-    QVector<demolitionStage> bbb = this->getDemStage();
 
 
 }
 void XMLReader::ParseStage(QXmlStreamReader& xml, demolitionStage &demStage, int& i)
 {
     xml.readNext();
-    cout<<(xml.text().toString()).toStdString()<<endl;
+    //cout<<(xml.text().toString()).toStdString()<<endl;
     demStage.stageId = i;
     xml.readNext();
 
 }
 void XMLReader::ParseTypeOfDemolition(QXmlStreamReader& xml, demolitionStage& demStage)
 {
-    cout<<xml.attributes().value("typeDem").toString().toInt()<<endl;
+    //cout<<xml.attributes().value("typeDem").toString().toInt()<<endl;
     demStage.typeDemolition = xml.attributes().value("typeDem").toString().toInt();
     xml.readNext();
-    cout<<(xml.text().toString()).toStdString()<<endl;
+    //cout<<(xml.text().toString()).toStdString()<<endl;
     xml.readNext();
 
 }
@@ -100,7 +98,7 @@ void XMLReader::ParseNuclides(QXmlStreamReader& xml, demolitionStage& demStage)
     {
         if (xml.name().toString() == "activity")
         {
-            cout<<(xml.text().toString()).toStdString()<<endl;
+            //cout<<(xml.text().toString()).toStdString()<<endl;
             demStage.Nuclides.nuclidesName.append(xml.attributes().value("nuclide").toString());
             xml.readNext();
             demStage.Nuclides.nuclidesValue.append(xml.text().toString().toFloat());
@@ -179,7 +177,7 @@ void XMLReader::ParseLPF(QXmlStreamReader& xml, demolitionStage& demStage)
            {
                 if (flag)
                 {
-                    demStage.LPF.LPFdem = value.toFloat();
+                    demStage.LPF.LPFdrop = value.toFloat();
                     once = false;
                 }
                 else
@@ -280,9 +278,9 @@ QString XMLReader::ParseValueWithAttr(QXmlStreamReader& xml, QVector<float> &Val
                 find = true;
                 bool flag;
                 QString a = QString(val);
-                cout<<a.toStdString()<<endl;
+                //cout<<a.toStdString()<<endl;
                 flag = a.contains(".", Qt::CaseInsensitive) or a.contains("0", Qt::CaseInsensitive) or a.contains("1", Qt::CaseInsensitive);
-                cout<<flag<<endl;
+                //cout<<flag<<endl;
                     if (flag)
                     {
                         xml.readNext();
